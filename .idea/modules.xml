@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/events-producer/events-producer.iml" filepath="$PROJECT_DIR$/events-producer/events-producer.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/eventstoredb_workshop.iml" filepath="$PROJECT_DIR$/.idea/eventstoredb_workshop.iml" />
+    </modules>
+  </component>
+</project>
