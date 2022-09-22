@@ -134,6 +134,17 @@
 <body>
 <div class="main-block">
     <h1>Transaction</h1>
+
+    <form name="new-account-form" id="new-account-form">
+        <hr>
+        <label id="new-account-icon" for="AccountID"><i class="fa fa-bank" aria-hidden="true"></i></label>
+        <input type="text" name="AccountID" id="AccountID" placeholder="AccountID" required/>
+        <hr>
+        <div class="btn-block">
+            <button type="submit" id="CreateButton" href="/">New Account</button>
+        </div>
+    </form>
+
     <form name="account-form" id="account-form">
         <hr>
         <div class="transaction-type">
@@ -147,13 +158,16 @@
         <input type="text" name="amount" id="amount" placeholder="amount" required/>
         <hr>
         <div class="btn-block">
-            <button type="submit" href="/">Submit</button>
+            <button type="submit" id="SubmitAmount" href="/">Submit</button>
         </div>
     </form>
 
     <script>
         // get the form element from dom
         const formElement = document.querySelector('form#account-form')
+        const formNewAccount = document.querySelector('form#new-account-form')
+
+
 
         // convert the form to JSON
         const getFormJSON = (form) => {
@@ -172,12 +186,38 @@
         };
 
         // handle the form submission event, prevent default form behaviour, check validity, convert form to JSON
-        const handler = (event) => {
+        const transaction = (event) => {
+            console.log(event.submitter.id)
             event.preventDefault();
+
+            console.log(event.submitter.id)
             const valid = formElement.reportValidity();
             if (valid) {
                 const result = getFormJSON(formElement);
                 console.log(result)
+
+                let xhr = new XMLHttpRequest();
+                const accountId = localStorage.getItem("AccountID");
+                console.log(accountId)
+                xhr.open("POST", "http://localhost:80/api/account/"+accountId);
+
+                xhr.setRequestHeader("Accept", "application/json");
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                xhr.onload = () => console.log(xhr.responseText);
+                xhr.send(JSON.stringify(result));
+            }
+        }
+
+        const createAccount = (event) => {
+            event.preventDefault();
+            console.log(event.submitter.id)
+
+            const valid = formNewAccount.reportValidity();
+            if (valid) {
+                const result = getFormJSON(formNewAccount);
+                console.log(result.AccountID)
+                localStorage.setItem("AccountID", result.AccountID);
 
                 let xhr = new XMLHttpRequest();
                 xhr.open("POST", "http://localhost:80/api/account");
@@ -190,7 +230,10 @@
             }
         }
 
-        formElement.addEventListener("submit", handler)
+
+
+        formElement.addEventListener("submit", transaction)
+        formNewAccount.addEventListener("submit",createAccount)
     </script>
 </div>
 </body>

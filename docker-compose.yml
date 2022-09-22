@@ -16,15 +16,15 @@ services:
     volumes:
       - ./local/eventstore/certs:/certs
 
-  events-producer:
-    image: events-producer:latest
-    ports:
-      - 8081:8080
+  backend:
+    image: backend:latest
 
   app:
     build: ./app
     ports:
       - 8080:80
+    depends_on:
+      - evenstore
 
   proxy:
     build: ./proxy
@@ -32,4 +32,4 @@ services:
       - 80:80
     depends_on:
       - app
-      - events-producer
+      - backend

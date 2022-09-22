@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="events-producer" />
+        <module name="backend" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="events-producer" target="1.5" />
+      <module name="backend" target="17" />
       <module name="eventstoredb_workshop" target="1.5" />
     </bytecodeTargetLevel>
   </component>

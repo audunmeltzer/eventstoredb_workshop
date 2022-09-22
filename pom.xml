@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>events-producer</module>
+        <module>backend</module>
     </modules>
 
     <properties>
