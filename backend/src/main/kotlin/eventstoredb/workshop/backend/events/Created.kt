@@ -1,3 +1,8 @@
 package eventstoredb.workshop.backend.events
 
-class Created(val id: String, val timestamp: Long)
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Created(var id: String?, var timestamp: Long?)
