@@ -5,12 +5,11 @@ import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBClientSettings
 import eventstoredb.workshop.backend.services.EventstoreService
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.testcontainers.containers.GenericContainer
-import org.testcontainers.shaded.org.hamcrest.Matchers
-import org.testcontainers.shaded.org.hamcrest.Matchers.hasProperty
-import org.testcontainers.shaded.org.hamcrest.beans.HasPropertyWithValue
 import java.lang.Thread.sleep
 import java.util.*
 
@@ -25,7 +24,7 @@ class EventstoreReaderTest : StringSpec({
         it["EVENTSTORE_INSECURE"] = "True"
     }
     val eventstoreDb = GenericContainer("eventstore/eventstore:22.6.0-buster-slim").withAccessToHost(true).withExposedPorts(2113).withEnv(eventstoreEnv.also { it.forEach {pair -> println("${pair.key}:${pair.value}")} })
-
+    lateinit var eventstoreService: EventstoreService
 
     beforeTest {
         println("Before every spec/test case")
@@ -37,10 +36,19 @@ class EventstoreReaderTest : StringSpec({
 
         var count = 0
         while(!eventstoreDb.isHealthy && count < 50){
-            sleep(500L)
+            withContext(Dispatchers.IO) {
+                sleep(500L)
+            }
             count++
         }
         println("EventstoreDB started on host ${eventstoreDb.host}:${eventstoreDb.getMappedPort(2113)}, after $count retries")
+
+        eventstoreService = EventstoreService(
+            EventStoreDBClient.create(
+                EventStoreDBClientSettings.builder().addHost(Endpoint(eventstoreDb.host, eventstoreDb.getMappedPort(2113))).tls(false)
+                    .tlsVerifyCert(false).buildConnectionSettings()
+            )
+        )
     }
 
     afterTest {
@@ -52,33 +60,37 @@ class EventstoreReaderTest : StringSpec({
         eventstoreDb.stop()
     }
 
-    "Test create and list accounts" {
-        val eventstoreService = EventstoreService(
-            EventStoreDBClient.create(
-                EventStoreDBClientSettings.builder().addHost(Endpoint(eventstoreDb.host, eventstoreDb.getMappedPort(2113))).tls(false)
-                    .tlsVerifyCert(false).buildConnectionSettings()
-            )
-        )
+    "Test create and get account" {
         val accountId = UUID.randomUUID().toString()
-        val accountId2 = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId)
-        eventstoreService.createAccount(accountId2)
-        val accounts = eventstoreService.getAccounts().accounts
-        accounts.filter { it.id == accountId || it.id == accountId2 }.size shouldBe 2
+
+        val account = eventstoreService.getAccount(accountId)
+
+        account shouldNotBe null
+        account.id shouldBe accountId
+        account.amount shouldBe 0L
     }
 
-    "Test create account with events" {
-        val eventstoreService = EventstoreService(
-            EventStoreDBClient.create(
-                EventStoreDBClientSettings.builder().addHost(Endpoint(eventstoreDb.host, eventstoreDb.getMappedPort(2113))).tls(false)
-                    .tlsVerifyCert(false).buildConnectionSettings()
-            )
-        )
+    "Test create account and deposit" {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId)
-        //eventstoreService.writeTransaction(accountId, "deposit", 100)
-        val accounts = eventstoreService.getAccounts().accounts
-        accounts.shouldContain(HasPropertyWithValue<String>("id", Matchers.equalTo(accountId)))
+        eventstoreService.deposit(accountId, 100)
+        val account = eventstoreService.getAccount(accountId)
+
+        account shouldNotBe null
+        account.id shouldBe accountId
+        account.amount shouldBe 100L
+    }
+
+    "Test create account and withdrawal" {
+        val accountId = UUID.randomUUID().toString()
+        eventstoreService.createAccount(accountId)
+        eventstoreService.withdrawal(accountId, 100)
+        val account = eventstoreService.getAccount(accountId)
+
+        account shouldNotBe null
+        account.id shouldBe accountId
+        account.amount shouldBe -100L
     }
 
 })

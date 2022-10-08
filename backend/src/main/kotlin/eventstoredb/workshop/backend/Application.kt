@@ -1,10 +1,7 @@
 package eventstoredb.workshop.backend
 
-import com.eventstore.dbclient.*
-import com.fasterxml.jackson.databind.ObjectMapper
 import eventstoredb.workshop.backend.events.Created
-import eventstoredb.workshop.backend.events.Deposit
-import eventstoredb.workshop.backend.events.Withdrawal
+import eventstoredb.workshop.backend.model.Account
 import eventstoredb.workshop.backend.services.EventstoreService
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -12,10 +9,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import java.time.Instant
 
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -39,7 +33,7 @@ fun Route.konfigurasjon() {
         get ("/account") {
             call.application.environment.log.info("GET request ${call.request.uri}")
 
-            call.respond(eventstoreService.getAccounts())
+            call.respond(emptyList<Account>())
         }
 
         post ("/account") {
@@ -58,7 +52,7 @@ fun Route.konfigurasjon() {
             val payload = call.receive<AccountPayload>()
             call.application.environment.log.info("Post with of payload: $payload")
 
-            eventstoreService.writeTransaction(accountId!!, payload.type, payload.amount.toLong())
+            eventstoreService.deposit(accountId!!, payload.amount.toLong())
 
             call.respond(ProducerResponse("Transaction registered"))
         }
