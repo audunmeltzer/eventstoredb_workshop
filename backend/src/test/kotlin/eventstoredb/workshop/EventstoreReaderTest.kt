@@ -1,12 +1,12 @@
-package eventstoredb.workshop.backend
+package eventstoredb.workshop
 
 import com.eventstore.dbclient.Endpoint
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBClientSettings
 import com.eventstore.dbclient.SubscribeToStreamOptions
-import eventstoredb.workshop.backend.services.AccountProjection
-import eventstoredb.workshop.backend.services.BY_CATEGORY_STREAM_NAME
-import eventstoredb.workshop.backend.services.EventstoreService
+import eventstoredb.workshop.services.AccountProjection
+import eventstoredb.workshop.services.BY_CATEGORY_STREAM_NAME
+import eventstoredb.workshop.services.EventstoreRepo
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.framework.concurrency.eventually
@@ -30,7 +30,7 @@ class EventstoreReaderTest : StringSpec({
         it["EVENTSTORE_INSECURE"] = "True"
     }
     val eventstoreDb = GenericContainer("eventstore/eventstore:22.6.0-buster-slim").withAccessToHost(true).withExposedPorts(2113).withEnv(eventstoreEnv.also { it.forEach {pair -> println("${pair.key}:${pair.value}")} })
-    lateinit var eventstoreService: EventstoreService
+    lateinit var eventstoreService: EventstoreRepo
 
     lateinit var client: EventStoreDBClient
 
@@ -57,7 +57,7 @@ class EventstoreReaderTest : StringSpec({
                     .tls(false)
                     .tlsVerifyCert(false).buildConnectionSettings()
                 )
-        eventstoreService = EventstoreService(client)
+        eventstoreService = EventstoreRepo(client)
     }
 
     afterTest {
@@ -108,6 +108,23 @@ class EventstoreReaderTest : StringSpec({
 
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId)
+
+        eventually(5000) {
+            val account = accountProjection.accounts[accountId]
+
+            account shouldNotBe null
+            account?.id shouldBe accountId
+        }
+    }
+
+
+    "Account should have updated amount from projection state" {
+        val accountProjection = AccountProjection()
+        client.subscribeToStream(BY_CATEGORY_STREAM_NAME, accountProjection, SubscribeToStreamOptions.get().resolveLinkTos().fromStart())
+
+        val accountId = UUID.randomUUID().toString()
+        eventstoreService.createAccount(accountId)
+        eventstoreService.deposit(accountId, 300)
         eventstoreService.withdrawal(accountId, 100)
 
         eventually(5000) {
@@ -115,7 +132,7 @@ class EventstoreReaderTest : StringSpec({
 
             account shouldNotBe null
             account?.id shouldBe accountId
-            account?.amount shouldBe -100L
+            account?.amount shouldBe 200
         }
     }
 

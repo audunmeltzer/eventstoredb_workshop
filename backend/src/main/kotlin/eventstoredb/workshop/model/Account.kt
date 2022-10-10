@@ -1,4 +1,4 @@
-package eventstoredb.workshop.backend.model
+package eventstoredb.workshop.model
 
 data class Account(val id: String, val amount: Long)
 

@@ -1,4 +1,4 @@
-package eventstoredb.workshop.backend.events
+package eventstoredb.workshop.events
 
 import kotlinx.serialization.Serializable
 

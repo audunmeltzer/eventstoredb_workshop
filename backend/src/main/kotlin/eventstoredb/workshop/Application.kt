@@ -1,8 +1,11 @@
-package eventstoredb.workshop.backend
+package eventstoredb.workshop
 
-import eventstoredb.workshop.backend.events.Created
-import eventstoredb.workshop.backend.model.Account
-import eventstoredb.workshop.backend.services.EventstoreService
+import com.eventstore.dbclient.Endpoint
+import com.eventstore.dbclient.EventStoreDBClient
+import com.eventstore.dbclient.EventStoreDBClientSettings
+import eventstoredb.workshop.events.Created
+import eventstoredb.workshop.model.Account
+import eventstoredb.workshop.services.EventstoreRepo
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -59,7 +62,7 @@ fun Route.konfigurasjon() {
     }
 }
 
-val eventstoreService = EventstoreService()
+val eventstoreService = EventstoreRepo(EventStoreDBClient.create(EventStoreDBClientSettings.builder().addHost(Endpoint("eventstore", 2113)).tls(false).tlsVerifyCert(false).buildConnectionSettings()))
 
 
 @Serializable

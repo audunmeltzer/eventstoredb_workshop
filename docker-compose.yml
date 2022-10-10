@@ -18,18 +18,3 @@ services:
 
   backend:
     image: backend:latest
-
-  app:
-    build: ./app
-    ports:
-      - 8080:80
-    depends_on:
-      - evenstore
-
-  proxy:
-    build: ./proxy
-    ports:
-      - 80:80
-    depends_on:
-      - app
-      - backend
