@@ -1,31 +1,29 @@
-package eventstoredb.workshop.services
+package eventstoredb.workshop.eventstore
 
 import com.eventstore.dbclient.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import eventstoredb.workshop.events.Created
-import eventstoredb.workshop.events.Deposit
-import eventstoredb.workshop.events.Event
-import eventstoredb.workshop.events.Withdrawal
-import eventstoredb.workshop.model.Account
-import io.ktor.server.plugins.*
-import java.time.Instant
+import eventstoredb.workshop.eventstore.events.Created
+import eventstoredb.workshop.eventstore.events.Deposit
+import eventstoredb.workshop.eventstore.events.Event
+import eventstoredb.workshop.eventstore.events.Withdrawal
 
 const val STREAM_NAME_PREFIX = "account"
 private val EVENTS_PACKAGE = Event::class.java.`package`.name
-
+const val NO_STREAM = -1L
 
 class EventstoreRepo(private val client: EventStoreDBClient) {
 
-    fun createAccount(accountID: String) {
-        val event = Created(id = accountID, timestamp = Instant.now().toEpochMilli())
+    fun createAccount(accountID: String, name: String) {
+        val event = Created(id = accountID, name)
         client.appendToStream("$STREAM_NAME_PREFIX-$accountID",
+            AppendToStreamOptions.get().expectedRevision(NO_STREAM),
             EventData.builderAsJson(event::class.java.simpleName, event).build()
         ).get()
     }
 
-    fun deposit(accountId: String, amount: Long) {
-        val event = Deposit(amount = amount)
+    fun deposit(accountId: String, description: String, amount: Long) {
+        val event = Deposit(amount = amount, description = description)
         client.appendToStream(
             "$STREAM_NAME_PREFIX-$accountId",
             EventData.builderAsJson(
@@ -35,8 +33,8 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         ).get()
     }
 
-    fun withdrawal(accountId: String, amount: Long) {
-        val event = Withdrawal(amount = amount)
+    fun withdrawal(accountId: String, description: String, amount: Long) {
+        val event = Withdrawal(amount = amount, description = description)
         client.appendToStream(
             "$STREAM_NAME_PREFIX-$accountId",
             EventData.builderAsJson(
@@ -46,7 +44,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         ).get()
     }
 
-    fun getAccount(accountID: String): Account {
+    fun getAccount(accountID: String): AccountAggregate {
         val readStreamOptions = ReadStreamOptions.get()
             .fromStart()
             .fromStart()
@@ -58,17 +56,13 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
 
         val events = readResult.events.map { it.event.toEvent() }.toList()
 
-        return toAccount(accountID, events)
+        return AccountAggregate().also {aggregate ->
+            events.forEach { event -> aggregate.handle(event) }
+        }
     }
 
 
-    private fun toAccount(id: String, events: List<Event>): Account {
-        if(events.isEmpty()) throw NotFoundException("Account with id $id not found")
 
-        val accountBuilder = AccountAggregate()
-        events.forEach { event -> accountBuilder.handle(event) }
-        return accountBuilder.build()
-    }
 }
 
 

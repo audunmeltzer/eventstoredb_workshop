@@ -4,9 +4,9 @@ import com.eventstore.dbclient.Endpoint
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBClientSettings
 import com.eventstore.dbclient.SubscribeToStreamOptions
-import eventstoredb.workshop.services.AccountProjection
-import eventstoredb.workshop.services.BY_CATEGORY_STREAM_NAME
-import eventstoredb.workshop.services.EventstoreRepo
+import eventstoredb.workshop.eventstore.AccountProjection
+import eventstoredb.workshop.eventstore.BY_CATEGORY_STREAM_NAME
+import eventstoredb.workshop.eventstore.EventstoreRepo
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.framework.concurrency.eventually
@@ -14,9 +14,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.junit.jupiter.api.assertThrows
 import org.testcontainers.containers.GenericContainer
 import java.lang.Thread.sleep
 import java.util.*
+import java.util.concurrent.ExecutionException
 
 @OptIn(ExperimentalKotest::class)
 class EventstoreReaderTest : StringSpec({
@@ -71,7 +73,7 @@ class EventstoreReaderTest : StringSpec({
 
     "Test create and get account" {
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId)
+        eventstoreService.createAccount(accountId, "Demo")
 
         val account = eventstoreService.getAccount(accountId)
 
@@ -80,11 +82,20 @@ class EventstoreReaderTest : StringSpec({
         account.amount shouldBe 0L
     }
 
+    "Test can not create two accounts with same ID" {
+        val accountId = UUID.randomUUID().toString()
+        eventstoreService.createAccount(accountId, "Demo")
+
+        assertThrows<ExecutionException> {
+            eventstoreService.createAccount(accountId, "Demo")
+        }
+    }
+
     "Test create account and deposit" {
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId)
-        eventstoreService.deposit(accountId, 100)
-        val account = eventstoreService.getAccount(accountId)
+        eventstoreService.createAccount(accountId, "Demo")
+        eventstoreService.deposit(accountId, "Salary",100)
+        val account = eventstoreService.getAccount(accountId).build()
 
         account shouldNotBe null
         account.id shouldBe accountId
@@ -93,8 +104,8 @@ class EventstoreReaderTest : StringSpec({
 
     "Test create account and withdrawal" {
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId)
-        eventstoreService.withdrawal(accountId, 100)
+        eventstoreService.createAccount(accountId, "Demo")
+        eventstoreService.withdrawal(accountId, "Shopping", 100)
         val account = eventstoreService.getAccount(accountId)
 
         account shouldNotBe null
@@ -107,7 +118,7 @@ class EventstoreReaderTest : StringSpec({
         client.subscribeToStream(BY_CATEGORY_STREAM_NAME, accountProjection, SubscribeToStreamOptions.get().resolveLinkTos().fromStart())
 
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId)
+        eventstoreService.createAccount(accountId, "Demo")
 
         eventually(5000) {
             val account = accountProjection.accounts[accountId]
@@ -123,9 +134,9 @@ class EventstoreReaderTest : StringSpec({
         client.subscribeToStream(BY_CATEGORY_STREAM_NAME, accountProjection, SubscribeToStreamOptions.get().resolveLinkTos().fromStart())
 
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId)
-        eventstoreService.deposit(accountId, 300)
-        eventstoreService.withdrawal(accountId, 100)
+        eventstoreService.createAccount(accountId, "Demo")
+        eventstoreService.deposit(accountId, "Salary",300)
+        eventstoreService.withdrawal(accountId, "Shopping",100)
 
         eventually(5000) {
             val account = accountProjection.accounts[accountId]

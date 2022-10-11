@@ -3,9 +3,8 @@ package eventstoredb.workshop
 import com.eventstore.dbclient.Endpoint
 import com.eventstore.dbclient.EventStoreDBClient
 import com.eventstore.dbclient.EventStoreDBClientSettings
-import eventstoredb.workshop.events.Created
 import eventstoredb.workshop.model.Account
-import eventstoredb.workshop.services.EventstoreRepo
+import eventstoredb.workshop.eventstore.EventstoreRepo
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
@@ -44,7 +43,7 @@ fun Route.konfigurasjon() {
             val payload = call.receive<CreateAccountPayload>()
             call.application.environment.log.info("Post with of payload: $payload")
 
-            eventstoreService.createAccount(payload.AccountID)
+            eventstoreService.createAccount(payload.AccountID, "Demo Account")
 
             call.respond(ProducerResponse("Account Created"))
         }
@@ -55,7 +54,7 @@ fun Route.konfigurasjon() {
             val payload = call.receive<AccountPayload>()
             call.application.environment.log.info("Post with of payload: $payload")
 
-            eventstoreService.deposit(accountId!!, payload.amount.toLong())
+            eventstoreService.deposit(accountId!!, "Salary", payload.amount.toLong())
 
             call.respond(ProducerResponse("Transaction registered"))
         }
@@ -74,5 +73,5 @@ data class AccountPayload(val type: String, val amount: String)
 data class CreateAccountPayload(val AccountID: String)
 
 @Serializable
-data class Accounts(val accounts: List<Created>)
+data class Accounts(val accounts: List<Account>)
 

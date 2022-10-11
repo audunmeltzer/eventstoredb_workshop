@@ -1,11 +1,11 @@
-package eventstoredb.workshop.services
+package eventstoredb.workshop.eventstore
 
 import com.eventstore.dbclient.ResolvedEvent
 import com.eventstore.dbclient.Subscription
 import com.eventstore.dbclient.SubscriptionListener
-import eventstoredb.workshop.events.Created
-import eventstoredb.workshop.events.Deposit
-import eventstoredb.workshop.events.Withdrawal
+import eventstoredb.workshop.eventstore.events.Created
+import eventstoredb.workshop.eventstore.events.Deposit
+import eventstoredb.workshop.eventstore.events.Withdrawal
 import eventstoredb.workshop.model.Account
 
 val BY_CATEGORY_STREAM_NAME = "\$ce-account"
