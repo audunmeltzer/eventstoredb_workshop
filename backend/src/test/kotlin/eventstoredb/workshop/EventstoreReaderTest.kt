@@ -71,7 +71,7 @@ class EventstoreReaderTest : StringSpec({
         eventstoreDb.stop()
     }
 
-    "Test create and get account" {
+    "Create and get account" {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
 
@@ -82,7 +82,7 @@ class EventstoreReaderTest : StringSpec({
         account.amount shouldBe 0L
     }
 
-    "Test can not create two accounts with same ID" {
+    "Can not create two accounts with same ID" {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
 
@@ -91,7 +91,7 @@ class EventstoreReaderTest : StringSpec({
         }
     }
 
-    "Test create account and deposit" {
+    "Create account and deposit" {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
         eventstoreService.deposit(accountId, "Salary",100)
@@ -102,7 +102,14 @@ class EventstoreReaderTest : StringSpec({
         account.amount shouldBe 100L
     }
 
-    "Test create account and withdrawal" {
+    "Deposit event should not be first event on stream" {
+        val accountId = UUID.randomUUID().toString()
+        assertThrows<ExecutionException> {
+            eventstoreService.deposit(accountId, "Salary", 100)
+        }
+    }
+
+    "Create account and withdrawal event" {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
         eventstoreService.withdrawal(accountId, "Shopping", 100)
@@ -113,7 +120,7 @@ class EventstoreReaderTest : StringSpec({
         account.amount shouldBe -100L
     }
 
-    "Test read accounts from projection" {
+    "Read accounts from projection" {
         val accountProjection = AccountProjection()
         client.subscribeToStream(BY_CATEGORY_STREAM_NAME, accountProjection, SubscribeToStreamOptions.get().resolveLinkTos().fromStart())
 

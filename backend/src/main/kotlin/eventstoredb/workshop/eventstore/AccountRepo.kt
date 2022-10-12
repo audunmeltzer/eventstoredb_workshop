@@ -10,14 +10,13 @@ import eventstoredb.workshop.eventstore.events.Withdrawal
 
 const val STREAM_NAME_PREFIX = "account"
 private val EVENTS_PACKAGE = Event::class.java.`package`.name
-const val NO_STREAM = -1L
 
 class EventstoreRepo(private val client: EventStoreDBClient) {
 
     fun createAccount(accountID: String, name: String) {
         val event = Created(id = accountID, name)
         client.appendToStream("$STREAM_NAME_PREFIX-$accountID",
-            AppendToStreamOptions.get().expectedRevision(NO_STREAM),
+            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.NO_STREAM),
             EventData.builderAsJson(event::class.java.simpleName, event).build()
         ).get()
     }
@@ -26,6 +25,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         val event = Deposit(amount = amount, description = description)
         client.appendToStream(
             "$STREAM_NAME_PREFIX-$accountId",
+            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.STREAM_EXISTS),
             EventData.builderAsJson(
                 event::class.java.simpleName,
                 event
@@ -37,6 +37,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         val event = Withdrawal(amount = amount, description = description)
         client.appendToStream(
             "$STREAM_NAME_PREFIX-$accountId",
+            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.STREAM_EXISTS),
             EventData.builderAsJson(
                 event::class.java.simpleName,
                 event
