@@ -16,5 +16,7 @@ services:
     volumes:
       - ./local/eventstore/certs:/certs
 
-  backend:
-    image: backend:latest
+  workshop-api:
+    image: workshop-api:latest
+    ports:
+      - "8080:8080"
