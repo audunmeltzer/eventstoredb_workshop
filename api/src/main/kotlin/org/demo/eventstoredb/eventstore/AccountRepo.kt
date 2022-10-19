@@ -15,18 +15,19 @@ private val EVENTS_PACKAGE = Event::class.java.`package`.name
 @Component
 class EventstoreRepo(private val client: EventStoreDBClient) {
 
-    fun createAccount(accountID: String, name: String) {
+    fun createAccount(accountID: String, name: String): WriteResult {
         val event = Created(id = accountID, name)
-        client.appendToStream("$STREAM_NAME_PREFIX-$accountID",
+        return client.appendToStream(
+            getStreamNameFromId(accountID),
             AppendToStreamOptions.get().expectedRevision(ExpectedRevision.NO_STREAM),
             EventData.builderAsJson(event::class.java.simpleName, event).build()
         ).get()
     }
 
-    fun deposit(accountId: String, description: String, amount: Long) {
+    fun deposit(accountId: String, description: String, amount: Long): WriteResult {
         val event = Deposit(amount = amount, description = description)
-        client.appendToStream(
-            "$STREAM_NAME_PREFIX-$accountId",
+        return client.appendToStream(
+            getStreamNameFromId(accountId),
             AppendToStreamOptions.get().expectedRevision(ExpectedRevision.STREAM_EXISTS),
             EventData.builderAsJson(
                 event::class.java.simpleName,
@@ -38,7 +39,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
     fun withdrawal(accountId: String, description: String, amount: Long) {
         val event = Withdrawal(amount = amount, description = description)
         client.appendToStream(
-            "$STREAM_NAME_PREFIX-$accountId",
+            getStreamNameFromId(accountId),
             AppendToStreamOptions.get().expectedRevision(ExpectedRevision.STREAM_EXISTS),
             EventData.builderAsJson(
                 event::class.java.simpleName,
@@ -54,7 +55,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
             .resolveLinkTos()
 
         val readResult = client
-            .readStream("$STREAM_NAME_PREFIX-$accountID", readStreamOptions)
+            .readStream(getStreamNameFromId(accountID), readStreamOptions)
             .get()
 
         val events = readResult.events.map { it.event.toEvent() }.toList()
@@ -64,6 +65,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         }
     }
 
+    private fun getStreamNameFromId(accountID: String) = "$STREAM_NAME_PREFIX-$accountID"
 
 
 }

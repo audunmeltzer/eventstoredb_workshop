@@ -1,27 +1,23 @@
-package eventstoredb.workshop
+package org.demo.eventstoredb.api
 
-import com.eventstore.dbclient.Endpoint
-import com.eventstore.dbclient.EventStoreDBClient
-import com.eventstore.dbclient.EventStoreDBClientSettings
-import com.eventstore.dbclient.SubscribeToStreamOptions
-import eventstoredb.workshop.eventstore.AccountProjection
-import eventstoredb.workshop.eventstore.BY_CATEGORY_STREAM_NAME
-import eventstoredb.workshop.eventstore.EventstoreRepo
-import io.kotest.common.ExperimentalKotest
+import com.eventstore.dbclient.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.framework.concurrency.eventually
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.demo.eventstoredb.eventstore.AccountProjection
+import org.demo.eventstoredb.eventstore.BY_CATEGORY_STREAM_NAME
+import org.demo.eventstoredb.eventstore.EventstoreRepo
 import org.junit.jupiter.api.assertThrows
 import org.testcontainers.containers.GenericContainer
 import java.lang.Thread.sleep
 import java.util.*
 import java.util.concurrent.ExecutionException
 
-@OptIn(ExperimentalKotest::class)
-class EventstoreReaderTest : StringSpec({
+@Suppress("unused")
+class EventstoreTests : StringSpec({
 
     val eventstoreEnv = mutableMapOf<String,String>().also {
         it["EVENTSTORE_CLUSTER_SIZE"] = "1"
@@ -36,13 +32,7 @@ class EventstoreReaderTest : StringSpec({
 
     lateinit var client: EventStoreDBClient
 
-    beforeTest {
-        println("Before every spec/test case")
-    }
-
-
     beforeSpec {
-        println("Before every test suite")
         eventstoreDb.start()
 
         var count = 0
@@ -62,18 +52,34 @@ class EventstoreReaderTest : StringSpec({
         eventstoreService = EventstoreRepo(client)
     }
 
-    afterTest {
-        println("After every spec/test case")
-    }
-
     afterSpec {
         println("After every test suite")
         eventstoreDb.stop()
     }
 
-    "Create and get account" {
+    "Create account" {
         val accountId = UUID.randomUUID().toString()
-        eventstoreService.createAccount(accountId, "Demo")
+        val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
+
+        writeResult.nextExpectedRevision.valueUnsigned shouldBe 0
+    }
+
+    "Create account with deposit" {
+        val accountId = UUID.randomUUID().toString()
+        val writeResult1 = eventstoreService.createAccount(accountId, "MyAccount")
+
+        writeResult1.nextExpectedRevision.valueUnsigned shouldBe 0
+
+        val writeResult2 = eventstoreService.deposit(accountId, "Salary",100)
+
+        writeResult2.nextExpectedRevision.valueUnsigned shouldBe 1
+    }
+
+    "Create account and read from EventstoreDB" {
+        val accountId = UUID.randomUUID().toString()
+        val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
+
+        writeResult.nextExpectedRevision shouldBe 0
 
         val account = eventstoreService.getAccount(accountId)
 
@@ -99,7 +105,7 @@ class EventstoreReaderTest : StringSpec({
 
         account shouldNotBe null
         account.id shouldBe accountId
-        account.amount shouldBe 100L
+        account.balance shouldBe 100L
     }
 
     "Deposit event should not be first event on stream" {
@@ -150,7 +156,7 @@ class EventstoreReaderTest : StringSpec({
 
             account shouldNotBe null
             account?.id shouldBe accountId
-            account?.amount shouldBe 200
+            account?.balance shouldBe 200
         }
     }
 
