@@ -3,20 +3,20 @@ package org.demo.eventstoredb.eventstore
 import com.eventstore.dbclient.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.demo.eventstoredb.eventstore.events.Created
+import org.demo.eventstoredb.eventstore.events.AccountCreated
 import org.demo.eventstoredb.eventstore.events.Deposit
 import org.demo.eventstoredb.eventstore.events.Event
 import org.demo.eventstoredb.eventstore.events.Withdrawal
 import org.springframework.stereotype.Component
 
-const val STREAM_NAME_PREFIX = "account"
+const val STREAM_NAME = "account"
 private val EVENTS_PACKAGE = Event::class.java.`package`.name
 
 @Component
 class EventstoreRepo(private val client: EventStoreDBClient) {
 
     fun createAccount(accountID: String, name: String): WriteResult {
-        val event = Created(id = accountID, name)
+        val event = AccountCreated(id = accountID, name)
         return client.appendToStream(
             getStreamNameFromId(accountID),
             AppendToStreamOptions.get().expectedRevision(ExpectedRevision.NO_STREAM),
@@ -49,15 +49,21 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
     }
 
     fun getAccount(accountID: String): AccountAggregate {
+        val readResult = readEventsFromStream(getStreamNameFromId(accountID))
+        return readResultToAccountAggregate(readResult)
+    }
+
+    private fun readEventsFromStream(streamName: String): ReadResult {
         val readStreamOptions = ReadStreamOptions.get()
-            .fromStart()
             .fromStart()
             .resolveLinkTos()
 
-        val readResult = client
-            .readStream(getStreamNameFromId(accountID), readStreamOptions)
+        return client
+            .readStream(streamName, readStreamOptions)
             .get()
+    }
 
+    private fun readResultToAccountAggregate(readResult: ReadResult): AccountAggregate {
         val events = readResult.events.map { it.event.toEvent() }.toList()
 
         return AccountAggregate().also { aggregate ->
@@ -65,7 +71,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         }
     }
 
-    private fun getStreamNameFromId(accountID: String) = "$STREAM_NAME_PREFIX-$accountID"
+    private fun getStreamNameFromId(accountID: String) = "$STREAM_NAME-$accountID"
 
 
 }

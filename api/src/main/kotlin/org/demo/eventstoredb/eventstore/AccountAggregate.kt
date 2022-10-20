@@ -1,6 +1,6 @@
 package org.demo.eventstoredb.eventstore
 
-import org.demo.eventstoredb.eventstore.events.Created
+import org.demo.eventstoredb.eventstore.events.AccountCreated
 import org.demo.eventstoredb.eventstore.events.Deposit
 import org.demo.eventstoredb.eventstore.events.Event
 import org.demo.eventstoredb.eventstore.events.Withdrawal
@@ -15,7 +15,7 @@ class AccountAggregate {
 
     fun handle(event: Event) = apply {
         when(event){
-            is Created -> id = event.id
+            is AccountCreated -> id = event.id
             is Withdrawal -> {
                 amount -= event.amount
                 transactions.add(event)

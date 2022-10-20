@@ -32,7 +32,7 @@ docker compose up -d
 docker compose down
 ```
 
-## Task 1; write events
+### Task 1; write events
 Start by check out branch *task1*
 
 In this workshop we will work with a bank account model. We will write three different event types:
@@ -42,6 +42,58 @@ In this workshop we will work with a bank account model. We will write three dif
 
 You find these events in package: org.demo.eventstoredb.eventstore.events
 
-Inside EventstoreRepo, you find functions that need to be updated with help from you.
+Inside EventstoreRepo, you find three functions that need to be updated with help from you.
+```kotlin
+fun createAccount(accountID: String, name: String): WriteResult {
+    //TODO Create AccountCreated event, and use eventstore Client to write event to EvenstoreDB
+}
 
-First we start with *createAccount*. Use available client and 
+fun deposit(accountId: String, description: String, amount: Long): WriteResult {
+    //TODO Create Deposit event, and use eventstore Client to write event to EvenstoreDB
+}
+
+fun withdrawal(accountId: String, description: String, amount: Long) {
+    //TODO Create Withdrawl event, and use eventstore Client to write event to EvenstoreDB
+}
+```
+
+### Task 2; version control
+In this task we will enforce two rules when writing events:
+- Account stream should always start with a AccountCreated event.
+- AccountCreated should only be written if stream does not exist.
+
+Update your implemententaion in Task 1.
+
+Tip:
+```java
+public CompletableFuture<WriteResult> appendToStream(String streamName, AppendToStreamOptions options, EventData... events)
+```
+
+### Task 3; Time to read
+Great! It's time to get something back from our event driven database.
+Help us implement 
+
+```kotlin
+private fun readEventsFromStream(streamName: String): ReadResult {
+    //TODO read all events from stream with name $streamName
+}
+```
+
+## Event Sourcing and CQRS
+Command-Query Segregation is a principal, where you seperate wrtire model from read model. This has two main advantages:
+- Both write and read model can be optimized
+- Scalability: By dividing our application in one query module, and one write module, we can scale them differently as needed.
+
+We can implement CQRS principal, by project data from EventstoreDB to desired read model. As an example, a read model can be written in memory, SQL database, or NoSQL.
+
+![](/home/audun/github/eventstoredb_workshop/images/cqrs.svg)
+
+### Task 4; Project into memory
+In this task you will implement a projection which will project all our data into an in memory read model.
+
+Open AccountProjection and implement 
+```kotlin
+override fun onEvent(subscription: Subscription, resolvedEvent: ResolvedEvent)
+```
+
+In this time our read database is in memory, implemented as a map. Each Event should create or update the state in *accounts* 
