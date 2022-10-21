@@ -88,6 +88,24 @@ We can implement CQRS principal, by project data from EventstoreDB to desired re
 
 ![](/home/audun/github/eventstoredb_workshop/images/cqrs.svg)
 
+````puml
+@startuml
+cloud client
+component Write
+component Read
+database EventstoreDB
+database ReadModel
+component Projection
+
+client --> Write : Add / Update
+client --> Read : Query
+Write --> EventstoreDB : Add / Update
+EventstoreDB -> Projection : Subscribe to stream
+Projection -> ReadModel : Update readmodel
+Read --> ReadModel : Query data
+@enduml
+````
+
 ### Task 4; Project into memory
 In this task you will implement a projection which will project all our data into an in memory read model.
 
