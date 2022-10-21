@@ -106,6 +106,13 @@ Read --> ReadModel : Query data
 @enduml
 ````
 
+```mermaid
+B --> C{Let me think}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+```
+
 ### Task 4; Project into memory
 In this task you will implement a projection which will project all our data into an in memory read model.
 
