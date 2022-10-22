@@ -1,13 +1,13 @@
 # Event Sourcing Workshop
-When how you got there is just as important as the final state.
+How you got there is just as important as the final state.
 
 Event source pattern, is when you store the entire chain of data transformation, ant not just the final state. Each event is immutable, and describes a transformation between two states.
 
-This workshop based on integration with [EventstoreDB](https://www.eventstore.com/eventstoredb).
+This workshop use [EventstoreDB](https://www.eventstore.com/eventstoredb) as event sourcing database.
 Going through a sequence of tasks, we will try writing and reading events, and play with projection.
 
-This workshop is based on a simple API (Rest) module written in [Kotlin](https://kotlinlang.org/), with use of [Spring](https://spring.io/).
-We will use one the official java client [Maven Central](https://central.sonatype.dev/artifact/com.eventstore/db-client-java/3.0.1/versions) / [Github](https://github.com/EventStore/EventStoreDB-Client-Java), when completing upcoming tasks. 
+You will work on a simple API (Rest) module written in [Kotlin](https://kotlinlang.org/), with use of [Spring](https://spring.io/).
+We will use one the official clients written in Java [Maven Central](https://central.sonatype.dev/artifact/com.eventstore/db-client-java/3.0.1/versions) / [Github](https://github.com/EventStore/EventStoreDB-Client-Java), when completing upcoming tasks. 
 There is also available clients, such as C#, Go, JavasScript, Rust and TypeScript. More details at [clients](https://developers.eventstore.com/clients/grpc/#connection-details)
 
 For each task, there will be a set of tests that will verify your code. 
@@ -17,7 +17,7 @@ You need to bring your own PC, with your favorite OS.
 We will write Kotlin kode, so Java is required at version 17 or grater.
 [Maven](https://maven.apache.org/) is used as build tool, and at the end we will use Docker and [Docker Compose](https://docs.docker.com/compose/) to get our hands dirty with EventstoreDB GUI. 
 
-Important! As for the workshop, you will get access to a Wifi Network. It might not be as fast as you would like. Download this repo in advanced and build this project, and start docker. This will download all required dependencies, in advanced.
+Important! As for the workshop, you will get access to a Wifi Network. It might not be as fast as you would like. Download this repo in advanced, build this project, and start docker. This will download all required dependencies, in advanced.
 ```cmd
 ## checkout repo
 git clone git@github.com:visito/eventstore-wrokshop.git
@@ -86,35 +86,14 @@ Command-Query Segregation is a principal, where you seperate wrtire model from r
 
 We can implement CQRS principal, by project data from EventstoreDB to desired read model. As an example, a read model can be written in memory, SQL database, or NoSQL.
 
-![](/home/audun/github/eventstoredb_workshop/images/cqrs.svg)
-
-````puml
-@startuml
-cloud client
-component Write
-component Read
-database EventstoreDB
-database ReadModel
-component Projection
-
-client --> Write : Add / Update
-client --> Read : Query
-Write --> EventstoreDB : Add / Update
-EventstoreDB -> Projection : Subscribe to stream
-Projection -> ReadModel : Update readmodel
-Read --> ReadModel : Query data
-@enduml
-````
-
 ```mermaid
-flowchart LR
-    A-->B
-    B-->C
-    C-->D
-    click A callback "Tooltip for a callback"
-    click B "https://www.github.com" "This is a tooltip for a link"
-    click A call callback() "Tooltip for a callback"
-    click B href "https://www.github.com" "This is a tooltip for a link"
+flowchart TD
+    A[Client] --> C[API: GET]
+    A[Client] --> B[API: POST/PUT]
+    B --> D[(EventstoreDB: Writemodel)]
+    C --> E[(SQL: Readmodel)]
+    F --> E
+    D --> F[Projection]
 ```
 
 ### Task 4; Project into memory
@@ -125,4 +104,66 @@ Open AccountProjection and implement
 override fun onEvent(subscription: Subscription, resolvedEvent: ResolvedEvent)
 ```
 
-In this time our read database is in memory, implemented as a map. Each Event should create or update the state in *accounts* 
+This demo keeps our read model database is in memory, implemented as a map. Each Event should create or update the state in *accounts* 
+
+### Task 5; Play with EvenstoreDB GUI
+Now you have worked with read, write and project operation. We are no going to start a local instance of EvenstoreDB, with our implemented RestAPI. 
+AccountsController is annotated with [Swagger](https://swagger.io/) and build the project will generate a OpenAPI spec we will use to integrate with the API.
+
+Bild (run mvn):
+```shell
+mvn clean install
+```
+
+Run (start docker compose):
+```shell
+docker compose up -d
+```
+
+Open EvenstoreDB [GUI](http://localhost:2113/web/index.html#/dashboard)
+Open [OpenApi documentation](http://localhost:8080/swagger-ui/index.html#/)
+
+Use *Try it out* and create a Account. Go to EvenstoreDB GUI and navigate to *Stream Browser*. You should now see your account listed under *Recently Created Streams*.
+Open your newly created stream. Only one event will show. 
+
+Go back to OpenApi documentation and use *Try it out* and do deposit and withdrawal. Se how events are added to your entity stream.
+
+Keep your docker images running when moving on to last task...
+
+### Task 6;
+EventStoreDB ships with five built in projections.
+- By Category ($by_category)
+- By Event Type ($by_event_type)
+- By Correlation ID ($by_correlation_id)
+- Stream by Category ($stream_by_category)
+- Streams ($streams)
+Read more about [system projections](https://developers.eventstore.com/server/v20.10/projections.html#system-projections)
+
+We can also create custom projections in JavaScript. We will create a new projection, that counts the number of deposits made on all accounts in total.
+Open local instance of EvenstoreDB in your browser. Go to Projections. Select *New Projection*. Give your projection a name. 
+Source should be:
+```javascript
+fromStream('$et-Deposit')
+    .when({
+        $init: function () {
+            return {
+                count: 0
+            }
+        },
+        Deposit: function (state, event) {
+            state.count += 1;
+        }
+    })
+    .transformBy(function (state) {
+        return {Total: state.count}
+    })
+    .outputState()
+```
+Change Mode from *One-time* to *Continues*
+Hit *Create*
+
+Congratulations! You have now created your first custom projection. Count should now be 1. Try go back to OpenApi specification and add another deposit and see if your projection count increase?
+
+
+
+
