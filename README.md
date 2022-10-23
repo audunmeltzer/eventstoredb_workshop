@@ -33,7 +33,7 @@ docker compose down
 ```
 
 ### Task 1; write events
-Start by check out branch *task1*
+Start by check out branch *start*
 
 In this workshop we will work with a bank account model. We will write three different event types:
 - Created
@@ -57,6 +57,11 @@ fun withdrawal(accountId: String, description: String, amount: Long) {
 }
 ```
 
+Run tests to verify implementation:
+```shell
+mvn test -Dkotest.tags=task1
+```
+
 ### Task 2; version control
 In this task we will enforce two rules when writing events:
 - Account stream should always start with a AccountCreated event.
@@ -69,6 +74,11 @@ Tip:
 public CompletableFuture<WriteResult> appendToStream(String streamName, AppendToStreamOptions options, EventData... events)
 ```
 
+Run tests to verify implementation:
+```shell
+mvn test -Dkotest.tags=task2
+```
+
 ### Task 3; Time to read
 Great! It's time to get something back from our event driven database.
 Help us implement 
@@ -77,6 +87,11 @@ Help us implement
 private fun readEventsFromStream(streamName: String): ReadResult {
     //TODO read all events from stream with name $streamName
 }
+```
+
+Run tests to verify implementation:
+```shell
+mvn test -Dkotest.tags=task3
 ```
 
 ## Event Sourcing and CQRS
@@ -105,6 +120,11 @@ override fun onEvent(subscription: Subscription, resolvedEvent: ResolvedEvent)
 ```
 
 This demo keeps our read model database is in memory, implemented as a map. Each Event should create or update the state in *accounts* 
+
+Run tests to verify implementation:
+```shell
+mvn test -Dkotest.tags=task4
+```
 
 ### Task 5; Play with EvenstoreDB GUI
 Now you have worked with read, write and project operation. We are no going to start a local instance of EvenstoreDB, with our implemented RestAPI. 

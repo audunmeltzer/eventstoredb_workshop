@@ -1,6 +1,9 @@
 package org.demo.eventstoredb.api
 
 import com.eventstore.dbclient.*
+import io.kotest.common.ExperimentalKotest
+import io.kotest.core.NamedTag
+import io.kotest.core.Tag
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.framework.concurrency.eventually
 import io.kotest.matchers.shouldBe
@@ -19,19 +22,20 @@ import java.util.concurrent.ExecutionException
 lateinit var eventstoreService: EventstoreRepo
 val accountProjection = AccountProjection()
 
+@OptIn(ExperimentalKotest::class)
 @Suppress("unused")
 class AccountRepoTest : StringSpec({
 
     // Task 1 tests
 
-    "Create account" {
+    "Create account".config (tags = setOf(NamedTag("task1"))) {
         val accountId = UUID.randomUUID().toString()
         val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
 
         writeResult.nextExpectedRevision.valueUnsigned shouldBe 0
     }
 
-    "Create account with deposit" {
+    "Create account with deposit".config (tags = setOf(NamedTag("task1"))) {
         val accountId = UUID.randomUUID().toString()
         val writeResult1 = eventstoreService.createAccount(accountId, "MyAccount")
 
@@ -42,7 +46,7 @@ class AccountRepoTest : StringSpec({
         writeResult2.nextExpectedRevision.valueUnsigned shouldBe 1
     }
 
-    "Create account with deposit and withdrawal events" {
+    "Create account with deposit and withdrawal events".config (tags = setOf(NamedTag("task1"))) {
         val accountId = UUID.randomUUID().toString()
         val writeResult1 = eventstoreService.createAccount(accountId, "MyAccount")
 
@@ -57,9 +61,7 @@ class AccountRepoTest : StringSpec({
         writeResult3.nextExpectedRevision.valueUnsigned shouldBe 2
     }
 
-    // Task 2 tests
-
-    "Two accounts with same ID, can not exists" {
+    "Two accounts with same ID, can not exists".config (tags = setOf(NamedTag("task2"))) {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
 
@@ -68,14 +70,14 @@ class AccountRepoTest : StringSpec({
         }
     }
 
-    "Deposit event should not be first event on stream" {
+    "Deposit event should not be first event on stream".config (tags = setOf(NamedTag("task2")))  {
         val accountId = UUID.randomUUID().toString()
         assertThrows<ExecutionException> {
             eventstoreService.deposit(accountId, "Salary", 100)
         }
     }
 
-    "Withdrawal event should not be first event on stream" {
+    "Withdrawal event should not be first event on stream".config (tags = setOf(NamedTag("task2")))  {
         val accountId = UUID.randomUUID().toString()
         assertThrows<ExecutionException> {
             eventstoreService.deposit(accountId, "Salary", 100)
@@ -84,7 +86,7 @@ class AccountRepoTest : StringSpec({
 
     // Task 3 tests
 
-    "I can get account from EventstoreDB" {
+    "I can get account from EventstoreDB".config (tags = setOf(NamedTag("task3")))   {
         val accountId = UUID.randomUUID().toString()
         val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
 
@@ -99,7 +101,7 @@ class AccountRepoTest : StringSpec({
 
 
 
-    "Account with deposit event, should reflect on account balance" {
+    "Account with deposit event, should reflect on account balance".config (tags = setOf(NamedTag("task3")))   {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
         eventstoreService.deposit(accountId, "Salary",100)
@@ -112,7 +114,7 @@ class AccountRepoTest : StringSpec({
 
 
 
-    "Account with withdrawal event, should reflect on account balance" {
+    "Account with withdrawal event, should reflect on account balance".config (tags = setOf(NamedTag("task3"))) {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
         eventstoreService.withdrawal(accountId, "Shopping", 100)
@@ -123,7 +125,7 @@ class AccountRepoTest : StringSpec({
         account.amount shouldBe -100L
     }
 
-    "Read accounts from projection" {
+    "Read accounts from projection".config (tags = setOf(NamedTag("task4"))) {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
 
@@ -136,7 +138,7 @@ class AccountRepoTest : StringSpec({
     }
 
 
-    "Account should have updated amount from projection state" {
+    "Account should have updated amount from projection state".config (tags = setOf(NamedTag("task4"))) {
         val accountId = UUID.randomUUID().toString()
         eventstoreService.createAccount(accountId, "Demo")
         eventstoreService.deposit(accountId, "Salary",300)
