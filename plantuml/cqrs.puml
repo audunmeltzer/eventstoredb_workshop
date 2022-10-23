@@ -1,0 +1,15 @@
+@startuml
+cloud client
+component Write
+component Read
+database EventstoreDB
+database ReadModel
+component Projection
+
+client --> Write : Add / Update
+client --> Read : Query
+Write --> EventstoreDB : Add / Update
+EventstoreDB -> Projection : Subscribe to stream
+Projection -> ReadModel : Update readmodel
+Read --> ReadModel : Query data
+@enduml
