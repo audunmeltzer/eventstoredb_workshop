@@ -12,7 +12,7 @@
     </modules>
 
     <properties>
-        <kotlin.version>1.7.10</kotlin.version>
+        <kotlin.version>1.8.10</kotlin.version>
         <serialization.version>1.4.0</serialization.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     </properties>
