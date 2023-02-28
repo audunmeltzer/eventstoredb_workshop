@@ -2,7 +2,7 @@ version: "3.5"
 services:
 
   eventstore:
-    image: eventstore/eventstore:22.6.0-buster-slim
+    image: eventstore/eventstore:22.10.1-buster-slim
     restart: always
     environment:
       - EVENTSTORE_CLUSTER_SIZE=1
