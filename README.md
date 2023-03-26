@@ -1,5 +1,5 @@
 # Event Sourcing Workshop
-How you got there is just as important as the final state.
+If how you got there is just as important as the final state.
 
 Event source pattern, is when you store the entire chain of data transformation, ant not just the final state. Each event is immutable, and describes a transformation between two states.
 
@@ -8,7 +8,7 @@ Going through a sequence of tasks, we will try writing and reading events, and p
 
 You will work on a simple API (Rest) module written in [Kotlin](https://kotlinlang.org/), with use of [Spring](https://spring.io/).
 We will use one the official clients written in Java [Maven Central](https://central.sonatype.dev/artifact/com.eventstore/db-client-java/3.0.1/versions) / [Github](https://github.com/EventStore/EventStoreDB-Client-Java), when completing upcoming tasks. 
-There is also available clients, such as C#, Go, JavasScript, Rust and TypeScript. More details at [clients](https://developers.eventstore.com/clients/grpc/#connection-details)
+There is also other clients available, such as C#, Go, JavasScript, Rust and TypeScript. More details at [clients](https://developers.eventstore.com/clients/grpc/#connection-details)
 
 For each task, there will be a set of tests that will verify your code. 
 
@@ -33,7 +33,7 @@ docker compose down
 ```
 
 ### Task 1; write events
-Start by check out branch *start*
+Start by check out branch *task_1*
 
 In this workshop we will work with a bank account model. We will write three different event types:
 - Created
@@ -42,7 +42,7 @@ In this workshop we will work with a bank account model. We will write three dif
 
 You find these events in package: org.demo.eventstoredb.eventstore.events
 
-Inside EventstoreRepo, you find three functions that need to be updated with help from you.
+Inside AccountRepo, you find three functions that need to be updated with help from you.
 ```kotlin
 fun createAccount(accountID: String, name: String): WriteResult {
     //TODO Create AccountCreated event, and use eventstore Client to write event to EvenstoreDB
