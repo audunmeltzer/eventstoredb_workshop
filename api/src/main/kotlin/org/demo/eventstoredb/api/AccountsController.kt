@@ -14,7 +14,7 @@ import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import org.demo.eventstoredb.api.model.Account
 import org.demo.eventstoredb.eventstore.AccountProjection
-import org.springdoc.api.annotations.ParameterObject
+import org.springdoc.core.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 
 
