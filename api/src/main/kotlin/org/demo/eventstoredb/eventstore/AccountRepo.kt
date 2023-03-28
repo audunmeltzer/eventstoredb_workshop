@@ -48,19 +48,14 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         ).get()
     }
 
-    fun getAccount(accountID: String): AccountAggregate {
-        val readResult = readEventsFromStream(getStreamNameFromId(accountID))
-        return readResultToAccountAggregate(readResult)
-    }
+    fun getAccount(accountID: String): AccountAggregate? =
+        readEventsFromStream(getStreamNameFromId(accountID))
+            ?.let { return readResultToAccountAggregate(it) }
 
-    private fun readEventsFromStream(streamName: String): ReadResult {
-        val readStreamOptions = ReadStreamOptions.get()
-            .fromStart()
-            .resolveLinkTos()
 
-        return client
-            .readStream(streamName, readStreamOptions)
-            .get()
+    private fun readEventsFromStream(streamName: String): ReadResult? {
+        //TODO read all events from stream with name $streamName
+        return null
     }
 
     private fun readResultToAccountAggregate(readResult: ReadResult): AccountAggregate {

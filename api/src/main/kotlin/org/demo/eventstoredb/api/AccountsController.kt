@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.servers.Server
+import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import org.demo.eventstoredb.api.model.Account
@@ -44,8 +45,8 @@ class AccountsController(private val accountService: AccountService, private val
     @ApiResponses(
         ApiResponse(responseCode = "200", description = "Get Account", content = [Content(schema = Schema(implementation = Account::class))]))
     @Operation(tags = [TAG], description = "Returns account from EventstoreDB")
-    fun getAccount(@PathVariable id: String): Account {
-        return accountService.get(id)
+    fun getAccount(@PathVariable id: String): Account? {
+        return accountService.get(id) ?: throw NotFoundException("Account not found")
     }
 
     @PostMapping("/")

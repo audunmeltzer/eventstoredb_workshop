@@ -9,6 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.demo.eventstoredb.eventstore.AccountAggregate
 import org.demo.eventstoredb.eventstore.AccountProjection
 import org.demo.eventstoredb.eventstore.BY_CATEGORY_STREAM_NAME
 import org.demo.eventstoredb.eventstore.EventstoreRepo
@@ -106,8 +107,8 @@ class AccountRepoTest : FreeSpec({
             val account = eventstoreService.getAccount(accountId)
 
             account shouldNotBe null
-            account.id shouldBe accountId
-            account.amount shouldBe 0L
+            account?.id shouldBe accountId
+            account?.amount shouldBe 0L
         }
 
 
@@ -116,11 +117,11 @@ class AccountRepoTest : FreeSpec({
             val accountId = UUID.randomUUID().toString()
             eventstoreService.createAccount(accountId, "Demo")
             eventstoreService.deposit(accountId, "Salary", 100)
-            val account = eventstoreService.getAccount(accountId).build()
+            val account = eventstoreService.getAccount(accountId)?.build()
 
             account shouldNotBe null
-            account.id shouldBe accountId
-            account.balance shouldBe 100L
+            account?.id shouldBe accountId
+            account?.balance shouldBe 100L
         }
 
 
@@ -132,8 +133,8 @@ class AccountRepoTest : FreeSpec({
             val account = eventstoreService.getAccount(accountId)
 
             account shouldNotBe null
-            account.id shouldBe accountId
-            account.amount shouldBe -100L
+            account?.id shouldBe accountId
+            account?.amount shouldBe -100L
         }
     }
 
