@@ -67,7 +67,7 @@ In this task we will enforce two rules when writing events:
 - Account stream should always start with a AccountCreated event.
 - AccountCreated should only be written if stream does not exist.
 
-Update your implemententaion in Task 1.
+Update your implemententaion in Task 1, or checkout branch *task_2*
 
 Tip:
 ```java
@@ -82,6 +82,8 @@ mvn test -Dkotest.tags=task2
 ### Task 3; Time to read
 Great! It's time to get something back from our event driven database.
 Help us implement 
+
+Continue from where you finished on task 2, or start with branch *task_3*
 
 ```kotlin
 private fun readEventsFromStream(streamName: String): ReadResult {
@@ -113,6 +115,8 @@ flowchart TD
 
 ### Task 4; Project into memory
 In this task you will implement a projection which will project all our data into an in memory read model.
+
+Continue from where you finished on task 2, or start with branch *task_4*
 
 Open AccountProjection and implement 
 ```kotlin
