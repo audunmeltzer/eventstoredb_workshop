@@ -19,7 +19,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         val event = AccountCreated(id = accountID, name)
         return client.appendToStream(
             getStreamNameFromId(accountID),
-            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.noStream()),
+            AppendToStreamOptions.get(),
             EventData.builderAsJson(event::class.java.simpleName, event).build()
         ).get()
     }
@@ -28,7 +28,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         val event = Deposit(amount = amount, description = description)
         return client.appendToStream(
             getStreamNameFromId(accountId),
-            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.streamExists()),
+            AppendToStreamOptions.get(),
             EventData.builderAsJson(
                 event::class.java.simpleName,
                 event
@@ -40,7 +40,7 @@ class EventstoreRepo(private val client: EventStoreDBClient) {
         val event = Withdrawal(amount = amount, description = description)
         client.appendToStream(
             getStreamNameFromId(accountId),
-            AppendToStreamOptions.get().expectedRevision(ExpectedRevision.streamExists()),
+            AppendToStreamOptions.get(),
             EventData.builderAsJson(
                 event::class.java.simpleName,
                 event
