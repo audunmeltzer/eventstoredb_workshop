@@ -10,14 +10,13 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.servers.Server
+import jakarta.ws.rs.Produces
+import jakarta.ws.rs.core.MediaType
 import org.demo.eventstoredb.api.model.Account
 import org.demo.eventstoredb.eventstore.AccountProjection
-import org.demo.eventstoredb.eventstore.EventstoreRepo
 import org.springdoc.api.annotations.ParameterObject
 import org.springframework.web.bind.annotation.*
 
-import javax.ws.rs.Produces
-import javax.ws.rs.core.MediaType
 
 const val TAG = "AccountsController"
 

@@ -37,33 +37,33 @@ class AccountRepoTest : FreeSpec({
             val accountId = UUID.randomUUID().toString()
             val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
 
-            writeResult.nextExpectedRevision.valueUnsigned shouldBe 0
+            writeResult.nextExpectedRevision shouldBe ExpectedRevision.expectedRevision(0)
         }
 
         "Create account with deposit".config(tags = setOf(task1)) {
             val accountId = UUID.randomUUID().toString()
             val writeResult1 = eventstoreService.createAccount(accountId, "MyAccount")
 
-            writeResult1.nextExpectedRevision.valueUnsigned shouldBe 0
+            writeResult1.nextExpectedRevision shouldBe ExpectedRevision.expectedRevision(0)
 
             val writeResult2 = eventstoreService.deposit(accountId, "Salary", 100)
 
-            writeResult2.nextExpectedRevision.valueUnsigned shouldBe 1
+            writeResult2.nextExpectedRevision shouldBe ExpectedRevision.expectedRevision(1)
         }
 
         "Create account with deposit and withdrawal events".config(tags = setOf(task1)) {
             val accountId = UUID.randomUUID().toString()
             val writeResult1 = eventstoreService.createAccount(accountId, "MyAccount")
 
-            writeResult1.nextExpectedRevision.valueUnsigned shouldBe 0
+            writeResult1.nextExpectedRevision shouldBe  ExpectedRevision.expectedRevision(0)
 
             val writeResult2 = eventstoreService.deposit(accountId, "Salary", 100)
 
-            writeResult2.nextExpectedRevision.valueUnsigned shouldBe 1
+            writeResult2.nextExpectedRevision shouldBe  ExpectedRevision.expectedRevision(1)
 
             val writeResult3 = eventstoreService.deposit(accountId, "Beer", 50)
 
-            writeResult3.nextExpectedRevision.valueUnsigned shouldBe 2
+            writeResult3.nextExpectedRevision shouldBe  ExpectedRevision.expectedRevision(2)
         }
     }
 
@@ -101,7 +101,7 @@ class AccountRepoTest : FreeSpec({
             val accountId = UUID.randomUUID().toString()
             val writeResult = eventstoreService.createAccount(accountId, "MyAccount")
 
-            writeResult.nextExpectedRevision.valueUnsigned shouldBe 0
+            writeResult.nextExpectedRevision shouldBe  ExpectedRevision.expectedRevision(0)
 
             val account = eventstoreService.getAccount(accountId)
 
@@ -178,7 +178,7 @@ class AccountRepoTest : FreeSpec({
     }
     val eventstoreDb =
         GenericContainer("eventstore/eventstore:22.6.0-buster-slim").withAccessToHost(true).withExposedPorts(2113)
-            .withEnv(eventstoreEnv.also { it.forEach { pair -> println("${pair.key}:${pair.value}") } })
+            .withEnv(eventstoreEnv.onEach { pair -> println("${pair.key}:${pair.value}") })
 
     beforeSpec {
         eventstoreDb.start()
