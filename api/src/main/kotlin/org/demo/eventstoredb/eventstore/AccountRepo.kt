@@ -3,10 +3,7 @@ package org.demo.eventstoredb.eventstore
 import com.eventstore.dbclient.*
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.demo.eventstoredb.eventstore.events.AccountCreated
-import org.demo.eventstoredb.eventstore.events.Deposit
 import org.demo.eventstoredb.eventstore.events.Event
-import org.demo.eventstoredb.eventstore.events.Withdrawal
 import org.springframework.stereotype.Component
 
 const val STREAM_NAME = "account"
@@ -16,36 +13,15 @@ private val EVENTS_PACKAGE = Event::class.java.`package`.name
 class EventstoreRepo(private val client: EventStoreDBClient) {
 
     fun createAccount(accountID: String, name: String): WriteResult {
-        val event = AccountCreated(id = accountID, name)
-        return client.appendToStream(
-            getStreamNameFromId(accountID),
-            AppendToStreamOptions.get(),
-            EventData.builderAsJson(event::class.java.simpleName, event).build()
-        ).get()
+        //TODO Create AccountCreated event, and use eventstore Client to write event to EvenstoreDB
     }
 
     fun deposit(accountId: String, description: String, amount: Long): WriteResult {
-        val event = Deposit(amount = amount, description = description)
-        return client.appendToStream(
-            getStreamNameFromId(accountId),
-            AppendToStreamOptions.get(),
-            EventData.builderAsJson(
-                event::class.java.simpleName,
-                event
-            ).build()
-        ).get()
+        //TODO Create Deposit event, and use eventstore Client to write event to EvenstoreDB
     }
 
     fun withdrawal(accountId: String, description: String, amount: Long) {
-        val event = Withdrawal(amount = amount, description = description)
-        client.appendToStream(
-            getStreamNameFromId(accountId),
-            AppendToStreamOptions.get(),
-            EventData.builderAsJson(
-                event::class.java.simpleName,
-                event
-            ).build()
-        ).get()
+        //TODO Create Withdrawl event, and use eventstore Client to write event to EvenstoreDB
     }
 
     fun getAccount(accountID: String): AccountAggregate? =
