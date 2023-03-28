@@ -67,6 +67,22 @@
             </dependency>
 
             <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-runner-junit5-jvm</artifactId>
+                <version>${kotest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-assertions-core-jvm</artifactId>
+                <version>${kotest.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.kotest</groupId>
+                <artifactId>kotest-property-jvm</artifactId>
+                <version>${kotest.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.eventstore</groupId>
                 <artifactId>db-client-java</artifactId>
                 <version>${db-client-java.version}</version>
