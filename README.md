@@ -107,10 +107,10 @@ We can implement CQRS principal, by project data from EventstoreDB to desired re
 flowchart TD
     A[Client] --> C[API: GET]
     A[Client] --> B[API: POST/PUT]
+    F[Projection] --> D
     B --> D[(EventstoreDB: Writemodel)]
     C --> E[(SQL: Readmodel)]
     F --> E
-    D --> F[Projection]
 ```
 
 ### Task 4; Project into memory
