@@ -31,7 +31,7 @@
         <springdoc-openapi-starter-webmvc-ui.version>2.1.0</springdoc-openapi-starter-webmvc-ui.version>
         <testcontainers.version>1.18.0</testcontainers.version>
         <kotest.version>5.5.5</kotest.version>
-        <swagger-annotations.version>2.2.9</swagger-annotations.version>
+        <swagger-annotations.version>2.2.11</swagger-annotations.version>
     </properties>
 
     <dependencyManagement>
