@@ -20,7 +20,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <kotlin.version>1.8.20</kotlin.version>
+        <kotlin.version>1.9.0</kotlin.version>
         <ktor.version>2.2.4</ktor.version>
         <slf4j.version>2.0.7</slf4j.version>
         <db-client-java.version>4.1.1</db-client-java.version>
